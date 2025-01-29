@@ -2,12 +2,12 @@ project_name: "ga_four"
 
 ## Connection Constants:
 constant: GA4_CONNECTION {
-  value: "bq-looker-marketplace"
+  value: "bigquery_-_cetrogar_ga4"
   export: override_required
 }
 
 constant: GA4_SCHEMA {
-  value: "ga4_export"
+  value: "analytics_288589538"
   export: override_optional
 }
 
