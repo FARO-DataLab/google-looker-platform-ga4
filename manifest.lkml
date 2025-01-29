@@ -1,4 +1,4 @@
-project_name: "test2"
+project_name: "cetrogar-ga4-bigquery-v1"
 
 ## Connection Constants:
 constant: GA4_CONNECTION {
