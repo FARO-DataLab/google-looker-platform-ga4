@@ -554,6 +554,11 @@ view: events {
     sql: ${sl_key} ;;
   }
 
+  dimension: clean_page_view_count {
+    type: number
+    hidden: yes
+    sql: CASE WHEN ${event_name} = 'page_view' THEN 1 ELSE 0 END ;;
+  }
 
   measure: total_page_views {
     # view_label: "Metrics"
@@ -563,8 +568,8 @@ view: events {
     group_label: "Pages"
     label: "Pageviews"
     description: "The total number of pageviews for the property."
-    type: count
-    filters: [event_name: "page_view"]
+    type: sum
+    sql: ${clean_page_view_count} ;;
     value_format_name: formatted_number
   }
 
