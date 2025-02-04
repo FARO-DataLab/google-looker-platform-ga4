@@ -554,11 +554,6 @@ view: events {
     sql: ${sl_key} ;;
   }
 
-  dimension: clean_page_view_count {
-    type: number
-    hidden: yes
-    sql: CASE WHEN ${event_name} = 'page_view' THEN 1 ELSE 0 END ;;
-  }
 
   measure: total_page_views {
     # view_label: "Metrics"
@@ -568,8 +563,8 @@ view: events {
     group_label: "Pages"
     label: "Pageviews"
     description: "The total number of pageviews for the property."
-    type: sum
-    sql: ${clean_page_view_count} ;;
+    type: count
+    filters: [event_name: "page_view"]
     value_format_name: formatted_number
   }
 
@@ -598,118 +593,118 @@ view: events {
 
   ## ECommerce
 
-    measure: total_transactions {
-      group_label: "Ecommerce"
-      label: "Transactions"
-      type: count_distinct
-      sql: ${ecommerce__transaction_id} ;;
-      filters: [ecommerce__transaction_id: "-(not set)"]
-    }
+  measure: total_transactions {
+    group_label: "Ecommerce"
+    label: "Transactions"
+    type: count_distinct
+    sql: ${ecommerce__transaction_id} ;;
+    filters: [ecommerce__transaction_id: "-(not set)"]
+  }
 
-    measure: transaction_revenue_per_user {
-      group_label: "Ecommerce"
-      type: number
-      sql: 1.0 * (${total_purchase_revenue}/NULLIF(${sessions.total_users},0)) ;;
-      value_format_name: usd
-    }
+  measure: transaction_revenue_per_user {
+    group_label: "Ecommerce"
+    type: number
+    sql: 1.0 * (${total_purchase_revenue}/NULLIF(${sessions.total_users},0)) ;;
+    value_format_name: usd
+  }
 
-    measure: transaction_conversion_rate {
-      group_label: "Ecommerce"
-      label: "Transaction Conversion Rate"
-      type: number
-      sql: 1.0 * (${total_transactions}/NULLIF(${sessions.total_sessions},0)) ;;
-      value_format_name: percent_2
-    }
+  measure: transaction_conversion_rate {
+    group_label: "Ecommerce"
+    label: "Transaction Conversion Rate"
+    type: number
+    sql: 1.0 * (${total_transactions}/NULLIF(${sessions.total_sessions},0)) ;;
+    value_format_name: percent_2
+  }
 
-    measure: total_purchase_revenue {
-      group_label: "Ecommerce"
-      label: "Purchase Revenue"
-      type: sum_distinct
-      sql: ${ecommerce__purchase_revenue} ;;
-      sql_distinct_key: ${ecommerce__transaction_id} ;;
-      value_format_name: usd
-    }
+  measure: total_purchase_revenue {
+    group_label: "Ecommerce"
+    label: "Purchase Revenue"
+    type: sum_distinct
+    sql: ${ecommerce__purchase_revenue} ;;
+    sql_distinct_key: ${ecommerce__transaction_id} ;;
+    value_format_name: usd
+  }
 
-    measure: total_purchase_revenue_usd {
-      group_label: "Ecommerce"
-      label: "Purchase Revenue (USD)"
-      type: sum
-      sql: ${ecommerce__purchase_revenue_in_usd} ;;
-      # sql_distinct_key: ${ecommerce__transaction_id} ;;
-      value_format_name: usd
-    }
+  measure: total_purchase_revenue_usd {
+    group_label: "Ecommerce"
+    label: "Purchase Revenue (USD)"
+    type: sum
+    sql: ${ecommerce__purchase_revenue_in_usd} ;;
+    # sql_distinct_key: ${ecommerce__transaction_id} ;;
+    value_format_name: usd
+  }
 
-    measure: total_refund_value {
-      group_label: "Ecommerce"
-      label: "Refund Value"
-      type: sum_distinct
-      sql: ${ecommerce__refund_value} ;;
-      sql_distinct_key: ${ecommerce__transaction_id} ;;
-      value_format_name: usd
-    }
+  measure: total_refund_value {
+    group_label: "Ecommerce"
+    label: "Refund Value"
+    type: sum_distinct
+    sql: ${ecommerce__refund_value} ;;
+    sql_distinct_key: ${ecommerce__transaction_id} ;;
+    value_format_name: usd
+  }
 
-    measure: total_refund_value_usd {
-      group_label: "Ecommerce"
-      label: "Refund Value (USD)"
-      type: sum_distinct
-      sql: ${ecommerce__refund_value_in_usd} ;;
-      sql_distinct_key: ${ecommerce__transaction_id} ;;
-      value_format_name: usd
-    }
+  measure: total_refund_value_usd {
+    group_label: "Ecommerce"
+    label: "Refund Value (USD)"
+    type: sum_distinct
+    sql: ${ecommerce__refund_value_in_usd} ;;
+    sql_distinct_key: ${ecommerce__transaction_id} ;;
+    value_format_name: usd
+  }
 
-    measure: total_shipping_value {
-      group_label: "Ecommerce"
-      label: "Shipping Value"
-      type: sum_distinct
-      sql: ${ecommerce__shipping_value} ;;
-      sql_distinct_key: ${ecommerce__transaction_id} ;;
-      value_format_name: usd
-    }
+  measure: total_shipping_value {
+    group_label: "Ecommerce"
+    label: "Shipping Value"
+    type: sum_distinct
+    sql: ${ecommerce__shipping_value} ;;
+    sql_distinct_key: ${ecommerce__transaction_id} ;;
+    value_format_name: usd
+  }
 
-    measure: total_shipping_value_usd {
-      group_label: "Ecommerce"
-      label: "Shipping Value (USD)"
-      type: sum_distinct
-      sql: ${ecommerce__shipping_value_in_usd} ;;
-      sql_distinct_key: ${ecommerce__transaction_id} ;;
-      value_format_name: usd
-    }
+  measure: total_shipping_value_usd {
+    group_label: "Ecommerce"
+    label: "Shipping Value (USD)"
+    type: sum_distinct
+    sql: ${ecommerce__shipping_value_in_usd} ;;
+    sql_distinct_key: ${ecommerce__transaction_id} ;;
+    value_format_name: usd
+  }
 
-    measure: total_tax_value {
-      group_label: "Ecommerce"
-      label: "Tax Value"
-      type: sum_distinct
-      sql: ${ecommerce__tax_value} ;;
-      sql_distinct_key: ${ecommerce__transaction_id} ;;
-      value_format_name: usd
-    }
+  measure: total_tax_value {
+    group_label: "Ecommerce"
+    label: "Tax Value"
+    type: sum_distinct
+    sql: ${ecommerce__tax_value} ;;
+    sql_distinct_key: ${ecommerce__transaction_id} ;;
+    value_format_name: usd
+  }
 
-    measure: total_tax_value_usd {
-      group_label: "Ecommerce"
-      label: "Tax Value (USD)"
-      type: sum_distinct
-      sql: ${ecommerce__tax_value_in_usd} ;;
-      sql_distinct_key: ${ecommerce__transaction_id} ;;
-      value_format_name: usd
-    }
+  measure: total_tax_value_usd {
+    group_label: "Ecommerce"
+    label: "Tax Value (USD)"
+    type: sum_distinct
+    sql: ${ecommerce__tax_value_in_usd} ;;
+    sql_distinct_key: ${ecommerce__transaction_id} ;;
+    value_format_name: usd
+  }
 
-    measure: total_item_quantity {
-      group_label: "Ecommerce"
-      label: "Transaction Items"
-      type: sum_distinct
-      sql: ${ecommerce__total_item_quantity} ;;
-      sql_distinct_key: ${ecommerce__transaction_id} ;;
-      value_format_name: decimal_0
-    }
+  measure: total_item_quantity {
+    group_label: "Ecommerce"
+    label: "Transaction Items"
+    type: sum_distinct
+    sql: ${ecommerce__total_item_quantity} ;;
+    sql_distinct_key: ${ecommerce__transaction_id} ;;
+    value_format_name: decimal_0
+  }
 
-    measure: total_unique_items {
-      group_label: "Ecommerce"
-      label: "Unique Items"
-      type: sum_distinct
-      sql: ${ecommerce__unique_items} ;;
-      sql_distinct_key: ${ecommerce__transaction_id} ;;
-      value_format_name: decimal_0
-    }
+  measure: total_unique_items {
+    group_label: "Ecommerce"
+    label: "Unique Items"
+    type: sum_distinct
+    sql: ${ecommerce__unique_items} ;;
+    sql_distinct_key: ${ecommerce__transaction_id} ;;
+    value_format_name: decimal_0
+  }
 
   # ----- Sets of fields for drilling ------
   set: detail {
