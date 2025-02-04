@@ -563,8 +563,9 @@ view: events {
     group_label: "Pages"
     label: "Pageviews"
     description: "The total number of pageviews for the property."
-    type: count
-    sql: ${TABLE}.event_name = "page_view" ;;
+    type: count_distinct
+    sql: CONCAT(${sl_key}, "-", CAST(${event_rank} AS STRING)) ;;
+    filters: [event_name: "page_view"]
     value_format_name: formatted_number
   }
 
