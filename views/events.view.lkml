@@ -564,7 +564,7 @@ view: events {
     label: "Pageviews"
     description: "The total number of pageviews for the property."
     type: count
-    filters: [event_name: "page_view"]
+    sql: ${TABLE}.event_name = "page_view" ;;
     value_format_name: formatted_number
   }
 
