@@ -17,7 +17,7 @@ view: session_event_packing {
           , sl.ga_session_number ga_session_number
           , sl.user_pseudo_id user_pseudo_id
           , sl.sl_key
-          , ARRAY_AGG(DISTINCT STRUCT(sl_key,
+          , ARRAY_AGG(STRUCT(sl_key,
                           event_rank,
                           page_view_rank,
                           page_view_reverse_rank,
