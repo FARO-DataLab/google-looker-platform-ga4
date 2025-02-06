@@ -532,16 +532,14 @@ view: events {
 
   # dimension: user_id
 
-## Measures
+  ## Measures
 
   measure: total_events {
     view_label: "Behavior"
     group_label: "Events"
     description: "The total number of events for the session."
-    type: count
-    # view_label: "Metrics"
-    # group_label: "Event Data"
-    # label: "Total Events"
+    type: count_distinct
+    sql: ${sl_key}||${event_rank} ;;  # Usar la misma concatenación que funcionó en la query
   }
 
   measure: total_unique_events {
