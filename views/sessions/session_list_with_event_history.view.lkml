@@ -14,7 +14,7 @@ view: session_list_with_event_history {
     increment_key: "session_date"
     increment_offset: 0
     sql: WITH deduplicated_events AS (
-          SELECT DISTINCT  -- Añadimos una CTE con DISTINCT para eliminar duplicados
+          SELECT DISTINCT  -- Usamos DISTINCT con todos los campos relevantes
             timestamp(SAFE.PARSE_DATE('%Y%m%d', REGEXP_EXTRACT(_TABLE_SUFFIX,r'(\d{8})'))) as session_date,
             (select value.int_value from UNNEST(events.event_params) where key = "ga_session_id") as ga_session_id,
             (select value.int_value from UNNEST(events.event_params) where key = "ga_session_number") as ga_session_number,
@@ -39,19 +39,27 @@ view: session_list_with_event_history {
             events.platform,
             events.event_dimensions,
             events.ecommerce,
-            events.items
+            events.items,
+            ROW_NUMBER() OVER (
+              PARTITION BY
+                user_pseudo_id,
+                event_timestamp,
+                event_name,
+                (select value.int_value from UNNEST(events.event_params) where key = "ga_session_id"),
+                (select value.int_value from UNNEST(events.event_params) where key = "ga_session_number")
+              ORDER BY event_timestamp
+            ) as event_dedup_rank  -- Añadimos un ranking para deduplicación
           FROM `@{GA4_SCHEMA}.@{GA4_TABLE_VARIABLE}` events
           WHERE {% incrementcondition %} timestamp(PARSE_DATE('%Y%m%d', REGEXP_EXTRACT(_TABLE_SUFFIX,r'[0-9]+'))) {%  endincrementcondition %}
         )
-        select
+        SELECT
           session_date,
           ga_session_id,
           ga_session_number,
           user_pseudo_id,
-          -- unique key for session:
           session_date||ga_session_id||ga_session_number||user_pseudo_id as sl_key,
           row_number() over (partition by session_date||ga_session_id||ga_session_number||user_pseudo_id order by event_timestamp) event_rank,
-          -- resto de los campos igual que antes pero usando deduplicated_events en lugar de events directamente
+          -- resto de los campos igual que antes
           (TIMESTAMP_DIFF(TIMESTAMP_MICROS(LEAD(event_timestamp) OVER (PARTITION BY session_date||ga_session_id||ga_session_number||user_pseudo_id ORDER BY event_timestamp asc))
           ,TIMESTAMP_MICROS(event_timestamp),second)/86400.0) time_to_next_event,
           case when event_name = 'page_view' then row_number() over (partition by session_date||ga_session_id||ga_session_number||user_pseudo_id, case when event_name = 'page_view' then true else false end order by event_timestamp)
@@ -81,7 +89,8 @@ view: session_list_with_event_history {
           event_dimensions,
           ecommerce,
           ARRAY(select as STRUCT it.* EXCEPT(item_params) from unnest(items) as it) as items
-        from deduplicated_events
+        FROM deduplicated_events
+        WHERE event_dedup_rank = 1  -- Solo tomamos el primer evento cuando hay duplicados
     ;;
   }
   dimension: session_date {
